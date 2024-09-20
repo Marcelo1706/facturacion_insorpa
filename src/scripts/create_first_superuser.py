@@ -1,10 +1,8 @@
+from datetime import UTC, datetime
 import asyncio
 import logging
-import uuid
-from datetime import UTC, datetime
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, MetaData, String, Table, insert, select
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, Integer, MetaData, String, Table, insert, select, Boolean, DateTime
 
 from ..app.core.config import settings
 from ..app.core.db.database import AsyncSession, async_engine, local_session
@@ -17,12 +15,10 @@ logger = logging.getLogger(__name__)
 
 async def create_first_user(session: AsyncSession) -> None:
     try:
-        name = settings.ADMIN_NAME
-        email = settings.ADMIN_EMAIL
-        username = settings.ADMIN_USERNAME
+        nit = settings.ADMIN_NAME
         hashed_password = get_password_hash(settings.ADMIN_PASSWORD)
 
-        query = select(User).filter_by(email=email)
+        query = select(User).filter_by(nit=nit)
         result = await session.execute(query)
         user = result.scalar_one_or_none()
 
@@ -32,26 +28,17 @@ async def create_first_user(session: AsyncSession) -> None:
                 "user",
                 metadata,
                 Column("id", Integer, primary_key=True, autoincrement=True, nullable=False),
-                Column("name", String(30), nullable=False),
-                Column("username", String(20), nullable=False, unique=True, index=True),
-                Column("email", String(50), nullable=False, unique=True, index=True),
+                Column("nit", String(14), nullable=False),
                 Column("hashed_password", String, nullable=False),
-                Column("profile_image_url", String, default="https://profileimageurl.com"),
-                Column("uuid", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4, unique=True),
                 Column("created_at", DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False),
                 Column("updated_at", DateTime),
                 Column("deleted_at", DateTime),
                 Column("is_deleted", Boolean, default=False, index=True),
-                Column("is_superuser", Boolean, default=False),
-                Column("tier_id", Integer, ForeignKey("tier.id"), index=True),
             )
 
             data = {
-                "name": name,
-                "email": email,
-                "username": username,
+                "nit": nit,
                 "hashed_password": hashed_password,
-                "is_superuser": True,
             }
 
             stmt = insert(user_table).values(data)
@@ -59,13 +46,13 @@ async def create_first_user(session: AsyncSession) -> None:
                 await conn.execute(stmt)
                 await conn.commit()
 
-            logger.info(f"Admin user {username} created successfully.")
+            logger.info(f"NIT user {nit} created successfully.")
 
         else:
-            logger.info(f"Admin user {username} already exists.")
+            logger.info(f"NIT user {nit} already exists.")
 
     except Exception as e:
-        logger.error(f"Error creating admin user: {e}")
+        logger.error(f"Error creating NIT user: {e}")
 
 
 async def main():

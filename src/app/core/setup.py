@@ -25,7 +25,7 @@ from .config import (
     settings,
 )
 from .db.database import Base, async_engine as engine
-from .utils import cache, queue, rate_limit
+from .utils import cache, queue
 from ..models import *
 
 # -------------- database --------------
@@ -51,16 +51,6 @@ async def create_redis_queue_pool() -> None:
 
 async def close_redis_queue_pool() -> None:
     await queue.pool.aclose()  # type: ignore
-
-
-# -------------- rate limit --------------
-async def create_redis_rate_limit_pool() -> None:
-    rate_limit.pool = redis.ConnectionPool.from_url(settings.REDIS_RATE_LIMIT_URL)
-    rate_limit.client = redis.Redis.from_pool(rate_limit.pool)  # type: ignore
-
-
-async def close_redis_rate_limit_pool() -> None:
-    await rate_limit.client.aclose()  # type: ignore
 
 
 # -------------- application --------------
@@ -96,8 +86,6 @@ def lifespan_factory(
         if isinstance(settings, RedisQueueSettings):
             await create_redis_queue_pool()
 
-        if isinstance(settings, RedisRateLimiterSettings):
-            await create_redis_rate_limit_pool()
 
         yield
 
@@ -106,9 +94,6 @@ def lifespan_factory(
 
         if isinstance(settings, RedisQueueSettings):
             await close_redis_queue_pool()
-
-        if isinstance(settings, RedisRateLimiterSettings):
-            await close_redis_rate_limit_pool()
 
     return lifespan
 

@@ -106,6 +106,34 @@ class EnvironmentSettings(BaseSettings):
     ENVIRONMENT: EnvironmentOption = config("ENVIRONMENT", default="local")
 
 
+class DTEAuthSettings(BaseSettings):
+    DTE_AUTH_URL: str = config("DTE_AUTH_URL", default="https://apitest.dtes.mh.gob.sv/seguridad/auth")
+    DTE_NIT: str = config("DTE_NIT", default="0000000000000")
+    DTE_NRC: str = config("DTE_NRC", default="0000000")
+    DTE_AUTH_PASSWORD: str = config("DTE_AUTH_PASSWORD", default="password")
+
+
+class DTESignatureSettings(BaseSettings):
+    DTE_SIGNATURE_URL: str = config("DTE_SIGNATURE_URL", default="https://apitest.dtes.mh.gob.sv/firma/firmar")
+    DTE_SIGNATURE_PASSWORD: str = config("DTE_SIGNATURE_PASSWORD", default="password")
+
+
+class DTEAPISettings(BaseSettings):
+    DTE_RECEPTION_URL: str = config("DTE_RECEPTION_URL", default="https://apitest.dtes.mh.gob.sv/fesv/recepciondte")
+    DTE_CONSULTAS_URL: str = config("DTE_CONSULTAS_URL", default="https://apitest.dtes.mh.gob.sv/fesv/recepcion/consultadte/")
+    DTE_CONTINGENCIA_URL: str = config("DTE_CONTINGENCIA_URL", default="https://apitest.dtes.mh.gob.sv/fesv/contingencia/")
+    DTE_ANULACION_URL: str = config("DTE_ANULACION_URL", default="https://apitest.dtes.mh.gob.sv/fesv/anulardte/")
+    PDF_GENERATOR_URL: str = config("PDF_GENERATION_URL", default="http://pdfs.octopus.local/")
+
+
+class MailSettings(BaseSettings):
+    SMTP_HOST: str = config("SMTP_HOST", default="localhost")
+    SMTP_PORT: int = config("SMTP_PORT", default=25)
+    SMTP_USER: str | None = config("SMTP_USER", default=None)
+    SMTP_PASSWORD: str | None = config("SMTP_PASSWORD", default=None)
+    SMTP_FROM: str = config("SMTP_FROM", default="someone@example.com")
+
+
 class Settings(
     AppSettings,
     PostgresSettings,
@@ -118,6 +146,10 @@ class Settings(
     RedisRateLimiterSettings,
     DefaultRateLimitSettings,
     EnvironmentSettings,
+    DTEAuthSettings,
+    DTESignatureSettings,
+    DTEAPISettings,
+    MailSettings
 ):
     pass
 
