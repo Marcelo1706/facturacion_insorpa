@@ -10,7 +10,7 @@ from ...core.exceptions.http_exceptions import DuplicateValueException, NotFound
 from ...crud.crud_datos_empresa import crud_datos_empresa
 from ...schemas.datos_empresa import DatosEmpresaCreate, DatosEmpresaRead, DatosEmpresaUpdate
 
-router = APIRouter(tags=["datos_empresa"])
+router = APIRouter(tags=["Datos de la empresa"])
 
 
 @router.get(

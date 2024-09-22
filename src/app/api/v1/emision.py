@@ -3,19 +3,19 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from ...api.dependencies import get_current_user
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import BadRequestException
 from ...core.utils.recepcion_dte import recepcion_dte
 from ...core.utils.signing import firmar_documento
+from ..dependencies import get_current_user
 
-router = APIRouter(tags=["Emisión de Documentos"])
+router = APIRouter(tags=["Emisión de Documentos Tributarios Electrónicos"])
 
 
 @router.post(
-    "/factura",
+    "/dte",
     dependencies=[Depends(get_current_user)])
-async def create_factura(
+async def send_dte(
     request: Request,
     dte: dict[str, Any],
     db: Annotated[AsyncSession, Depends(async_get_db)]

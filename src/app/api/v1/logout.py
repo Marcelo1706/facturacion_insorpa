@@ -6,7 +6,7 @@ from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import UnauthorizedException
 from ...core.security import blacklist_token, oauth2_scheme
 
-router = APIRouter(tags=["login"])
+router = APIRouter(tags=["Autenticación"])
 
 
 @router.post("/logout")

@@ -17,7 +17,7 @@ from ...core.security import (
     verify_token,
 )
 
-router = APIRouter(tags=["login"])
+router = APIRouter(tags=["Autenticación"])
 
 
 @router.post("/auth", response_model=Token)
