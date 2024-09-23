@@ -9,7 +9,9 @@ from ...core.exceptions.http_exceptions import UnprocessableEntityException
 from ...core.utils.auth_mh import get_token
 from ...core.utils.pdf_generation import generar_pdf
 from ...crud.crud_dte import crud_dte
+from ...crud.crud_evento import crud_evento
 from ...schemas.dte import DTECreate, DTERead
+from ...schemas.evento import EventoCreate
 
 
 async def recepcion_dte(
@@ -99,3 +101,65 @@ async def recepcion_dte(
             )
         )
         return dte_data
+
+
+async def contingencia_dte(documento_firmado: str, documento_sin_firma: dict, db: AsyncSession):
+    try:
+        token = get_token()
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/JSON",
+            "User-Agent": "DTE-APP"
+        }
+        data = {
+            "nit": settings.DTE_NIT,
+            "documento": documento_firmado
+        }
+        response = requests.post(settings.DTE_CONTINGENCIA_URL, json=data, headers=headers)
+
+        await crud_evento.create(
+            db=db,
+            object=EventoCreate(
+                tipo_evento="CONTINGENCIA",
+                evento=json.dumps(documento_sin_firma),
+                respuesta_mh=json.dumps(response.json())
+            )
+        )
+        return response.json()
+
+    except (requests.exceptions.HTTPError, requests.exceptions.RequestException, Exception) as e:
+        return {"message": "Error al enviar el evento de contingencia: " + str(e)}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"message": "Error de conexión con el servidor de Hacienda"}
+
+
+async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: AsyncSession):
+    try:
+        token = get_token()
+        headers = {
+            "Authorization": token,
+            "Content-Type": "application/JSON",
+            "User-Agent": "DTE-APP"
+        }
+        data = {
+            "ambiente": documento_sin_firma["identificacion"]["ambiente"],
+            "idEnvio": 1,
+            "version": documento_sin_firma["identificacion"]["version"],
+            "documento": documento_firmado
+        }
+        response = requests.post(settings.DTE_ANULACION_URL, json=data, headers=headers)
+
+        await crud_evento.create(
+            db=db,
+            object=EventoCreate(
+                tipo_evento="INVALIDACION",
+                evento=json.dumps(documento_sin_firma),
+                respuesta_mh=json.dumps(response.json())
+            )
+        )
+        return response.json()
+
+    except (requests.exceptions.HTTPError, requests.exceptions.RequestException, Exception) as e:
+        return {"message": "Error al enviar el evento de invalidación: " + str(e)}
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        return {"message": "Error de conexión con el servidor de Hacienda"}
