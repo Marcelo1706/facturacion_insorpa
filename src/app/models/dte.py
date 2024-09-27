@@ -1,6 +1,6 @@
 from datetime import UTC, datetime
 
-from sqlalchemy import DateTime, Integer, String, Text
+from sqlalchemy import DateTime, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from ..core.db.database import Base
@@ -11,6 +11,7 @@ class DTE(Base):
 
     id: Mapped[int] = mapped_column("id", autoincrement=True, nullable=False, unique=True, primary_key=True, init=False)
     cod_generacion: Mapped[str] = mapped_column(String(255), nullable=False)
+    numero_control: Mapped[str] = mapped_column(String(255), nullable=False)
     sello_recibido: Mapped[str | None] = mapped_column(String(255), nullable=True)
     estado: Mapped[str] = mapped_column(String(255), nullable=False)
     documento: Mapped[str] = mapped_column(Text, nullable=False)

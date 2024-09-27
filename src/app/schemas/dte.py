@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Base schema for DTE
 class DTEBase(BaseModel):
     cod_generacion: Annotated[str, Field(max_length=255)]
+    numero_control: Annotated[str, Field(max_length=255)]
     sello_recibido: Annotated[str | None, Field(max_length=255)] = None
     estado: Annotated[str, Field(max_length=255)]
     documento: str
@@ -29,6 +30,7 @@ class DTECreate(DTEBase):
 class DTEUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     cod_generacion: Annotated[str, Field(max_length=255)]
+    numero_control: Annotated[str, Field(max_length=255)]
     sello_recibido: Annotated[str | None, Field(max_length=255)] = None
     estado: Annotated[str, Field(max_length=255)]
     documento: str

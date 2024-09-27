@@ -12,7 +12,6 @@ def generar_pdf(documento: str, sello_recibido: str, tipo_dte: str):
                 "selloRecibido": sello_recibido
             }
         )
-        print(response.text)
         return response.json()
     except (
         requests.exceptions.HTTPError,
@@ -20,7 +19,6 @@ def generar_pdf(documento: str, sello_recibido: str, tipo_dte: str):
         requests.exceptions.Timeout,
         Exception
     ) as e:
-        print(f"Error al generar PDF {str(e)}")
         return {
             "pdfUrl": "",
             "jsonUrl": "",

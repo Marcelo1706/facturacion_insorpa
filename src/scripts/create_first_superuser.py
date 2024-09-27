@@ -1,8 +1,8 @@
-from datetime import UTC, datetime
 import asyncio
 import logging
+from datetime import UTC, datetime
 
-from sqlalchemy import Column, Integer, MetaData, String, Table, insert, select, Boolean, DateTime
+from sqlalchemy import Boolean, Column, DateTime, Integer, MetaData, String, Table, insert, select
 
 from ..app.core.config import settings
 from ..app.core.db.database import AsyncSession, async_engine, local_session

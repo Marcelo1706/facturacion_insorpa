@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...core.config import settings
 from ...core.exceptions.http_exceptions import UnprocessableEntityException
 from ...core.utils.auth_mh import get_token
+from ...core.utils.numero_control import update_numero_control
 from ...core.utils.pdf_generation import generar_pdf
 from ...crud.crud_dte import crud_dte
 from ...crud.crud_evento import crud_evento
@@ -48,6 +49,7 @@ async def recepcion_dte(
                 db=db,
                 object=DTECreate(
                     cod_generacion=codGeneracion,
+                    numero_control=documento_sin_firma["identificacion"]["numeroControl"],
                     sello_recibido=response_data["selloRecibido"],
                     estado=response_data["estado"],
                     documento=json.dumps(documento_sin_firma),
@@ -59,12 +61,14 @@ async def recepcion_dte(
                     enlace_ticket=enlaces["rtfUrl"]
                 )
             )
+            await update_numero_control(db=db, tipo_dte=tipoDte)
             return dte_data
         else:
             dte_data: DTERead = await crud_dte.create(
                 db=db,
                 object=DTECreate(
                     cod_generacion=codGeneracion,
+                    numero_control=documento_sin_firma["identificacion"]["numeroControl"],
                     sello_recibido="",
                     estado="RECHAZADO",
                     documento=json.dumps(documento_sin_firma),
@@ -89,6 +93,7 @@ async def recepcion_dte(
             db=db,
             object=DTECreate(
                 cod_generacion=codGeneracion,
+                numero_control=documento_sin_firma["identificacion"]["numeroControl"],
                 sello_recibido="",
                 estado="CONTINGENCIA",
                 documento=json.dumps(documento_sin_firma),
@@ -100,6 +105,7 @@ async def recepcion_dte(
                 enlace_ticket=enlaces["rtfUrl"]
             )
         )
+        await update_numero_control(db=db, tipo_dte=tipoDte)
         return dte_data
 
 

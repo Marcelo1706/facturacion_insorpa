@@ -76,3 +76,21 @@ async def read_dte(request: Request, codGeneracion: str, db: Annotated[AsyncSess
     if dte_data is None:
         raise NotFoundException("DTE not found")
     return dte_data
+
+
+@router.get(
+    "/dtes/numero_control/{numeroControl}",
+    response_model=DTERead,
+    dependencies=[Depends(get_current_user)])
+async def read_dte_by_numero_control(
+    request: Request,
+    numeroControl: str,
+    db: Annotated[AsyncSession, Depends(async_get_db)]) -> DTERead:
+    dte_data = await crud_dte.get(
+        db=db,
+        schema_to_select=DTERead,
+        numero_control=numeroControl
+    )
+    if dte_data is None:
+        raise NotFoundException("DTE not found")
+    return dte_data

@@ -8,6 +8,7 @@ from .emision import router as factura_router
 from .evento import router as evento_router
 from .login import router as login_router
 from .logout import router as logout_router
+from .secuencia import router as secuencia_router
 
 # from .users import router as users_router
 
@@ -20,4 +21,5 @@ router.include_router(factura_router)
 router.include_router(contingencia_router)
 router.include_router(anulacion_router)
 router.include_router(evento_router)
+router.include_router(secuencia_router)
 # router.include_router(users_router)
