@@ -163,7 +163,10 @@ async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: A
                 respuesta_mh=json.dumps(response.json())
             )
         )
-        return response.json()
+        response_data = response.json()
+
+        response_data["fhProcesamiento"] = datetime.strptime(response_data["fhProcesamiento"], "%d/%m/%Y %H:%M:%S")
+        return response_data
 
     except (requests.exceptions.HTTPError, requests.exceptions.RequestException, Exception) as e:
         return {"message": "Error al enviar el evento de invalidación: " + str(e)}
