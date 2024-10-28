@@ -44,7 +44,7 @@ async def recepcion_dte(
                 sello_recibido=response_data["selloRecibido"],
                 tipo_dte=tipoDte
             )
-
+            documento_sin_firma["selloRecibido"] = response_data["selloRecibido"]
             dte_data: DTERead = await crud_dte.create(
                 db=db,
                 object=DTECreate(
