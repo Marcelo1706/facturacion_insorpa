@@ -39,12 +39,12 @@ async def recepcion_dte(
         response_data = response.json()
 
         if response.status_code == 200:
+            documento_sin_firma["selloRecibido"] = response_data["selloRecibido"]
             enlaces = generar_pdf(
                 documento=json.dumps(documento_sin_firma),
                 sello_recibido=response_data["selloRecibido"],
                 tipo_dte=tipoDte
             )
-            documento_sin_firma["selloRecibido"] = response_data["selloRecibido"]
             dte_data: DTERead = await crud_dte.create(
                 db=db,
                 object=DTECreate(
