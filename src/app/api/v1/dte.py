@@ -79,7 +79,7 @@ async def read_dte(request: Request, codGeneracion: str, db: Annotated[AsyncSess
 
 
 @router.get(
-    "/dtes/numero_control/{numeroControl}",
+    "/dtes_numero_control/{numeroControl}",
     response_model=DTERead,
     dependencies=[Depends(get_current_user)])
 async def read_dte_by_numero_control(
@@ -94,3 +94,38 @@ async def read_dte_by_numero_control(
     if dte_data is None:
         raise NotFoundException("DTE not found")
     return dte_data
+
+
+@router.get(
+    "/dtes_statistics",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)])
+async def get_dtes_statistics(
+    request: Request,    
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+    fecha: str = None,) -> dict:
+
+    if fecha: 
+        fecha_inicio = datetime.strptime(f"{fecha} 00:00:00", "%Y-%m-%d %H:%M:%S")
+        fecha_fin = datetime.strptime(f"{fecha} 23:59:59", "%Y-%m-%d %H:%M:%S")
+        dtes = await crud_dte.get_multi(
+            db=db,
+            fh_procesamiento__gte=fecha_inicio,
+            fh_procesamiento__lte=fecha_fin,
+            schema_to_select=DTERead,
+            return_as_model=True
+        )
+    else:
+        dtes = await crud_dte.get_multi(
+            db=db,
+            schema_to_select=DTERead,
+            return_as_model=True
+        )
+
+    return {
+        "total": len(dtes["data"]),
+        "approved": len([dte for dte in dtes["data"] if dte.estado == "PROCESADO"]),
+        "rejected": len([dte for dte in dtes["data"] if dte.estado == "RECHAZADO"]),
+        "contingencia": len([dte for dte in dtes["data"] if dte.estado == "CONTINGENCIA"]),
+        "anulado": len([dte for dte in dtes["data"] if dte.estado == "ANULADO"])
+    }

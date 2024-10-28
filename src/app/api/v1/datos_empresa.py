@@ -31,6 +31,20 @@ async def read_datos_empresa(
     return response
 
 
+@router.get(
+    "/datos_empresa/{id}",
+    response_model=DatosEmpresaRead,
+    dependencies=[Depends(get_current_user)])
+async def read_datos_empresa_by_id(
+    request: Request, id: int, db: Annotated[AsyncSession, Depends(async_get_db)]
+) -> DatosEmpresaRead:
+    datos_empresa_data = await crud_datos_empresa.get(db=db, schema_to_select=DatosEmpresaRead, id=id)
+    if datos_empresa_data is None:
+        raise NotFoundException("Datos Empresa not found")
+
+    return datos_empresa_data
+
+
 @router.post(
     "/datos_empresa",
     response_model=DatosEmpresaRead,
