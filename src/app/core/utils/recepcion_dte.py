@@ -1,12 +1,14 @@
 import json
 from datetime import datetime
 
+import pytz
 import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...core.config import settings
 from ...core.exceptions.http_exceptions import UnprocessableEntityException
 from ...core.utils.auth_mh import get_token
+from ...core.utils.mail import send_mail
 from ...core.utils.numero_control import update_numero_control
 from ...core.utils.pdf_generation import generar_pdf
 from ...crud.crud_dte import crud_dte
@@ -62,6 +64,29 @@ async def recepcion_dte(
                 )
             )
             await update_numero_control(db=db, tipo_dte=tipoDte)
+
+            if tipoDte == "14":
+                receptor_mail = documento_sin_firma.get("sujetoExcluido", {}).get("correo", None)
+                nombre_receptor = documento_sin_firma.get("sujetoExcluido", {}).get("nombre", "Cliente")
+            else:
+                receptor_mail = documento_sin_firma.get("receptor", {}).get("correo", None)
+                nombre_receptor = documento_sin_firma.get("receptor", {}).get("nombre", "Cliente")
+
+            send_mail(
+                send_to=[receptor_mail or "facturas@facturacion-insorpa.com"],
+                subject="Documento Tributario Electrónico",
+                message=(f"Estimado(a) {nombre_receptor},\n\n"
+                            "Adjunto encontrará su documento tributario electrónico:\n\n"
+                            f"Código de Generación: {codGeneracion}\n"
+                            f"Número de Control: {documento_sin_firma['identificacion']['numeroControl']}\n"
+                            f"Sello de Recepción: {response_data['selloRecibido']}\n"
+                            f"Fecha de Procesamiento: {datetime.now(pytz.timezone('America/El_Salvador'))}\n"
+                            f"Estado: {response_data['estado']}\n"),
+                files=[
+                    enlaces["pdfUrl"],
+                    enlaces["jsonUrl"],
+                ]
+            )
             return dte_data
         else:
             dte_data: DTERead = await crud_dte.create(
