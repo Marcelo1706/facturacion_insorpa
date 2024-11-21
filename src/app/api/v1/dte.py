@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Request
@@ -27,6 +27,7 @@ async def read_dtes(
     end_date: datetime = None
 ) -> dict:
     if start_date and not end_date:
+        start_date += timedelta(hours=6)
         dte_data = await crud_dte.get_multi(
             db=db,
             offset=compute_offset(page, items_per_page),
@@ -35,6 +36,7 @@ async def read_dtes(
             schema_to_select=DTERead
         )
     elif end_date and not start_date:
+        end_date += timedelta(hours=6)
         dte_data = await crud_dte.get_multi(
             db=db,
             offset=compute_offset(page, items_per_page),
@@ -43,6 +45,8 @@ async def read_dtes(
             schema_to_select=DTERead
         )
     elif start_date and end_date:
+        start_date += timedelta(hours=6)
+        end_date += timedelta(hours=6)
         dte_data = await crud_dte.get_multi(
             db=db,
             offset=compute_offset(page, items_per_page),
@@ -107,6 +111,7 @@ async def get_dtes_statistics(
     end_date: datetime = None) -> dict:
 
     if start_date and not end_date:
+        start_date += timedelta(hours=6)
         dtes = await crud_dte.get_multi(
             db=db,
             fh_procesamiento__gte=start_date,
@@ -114,6 +119,7 @@ async def get_dtes_statistics(
             return_as_model=True
         )
     elif end_date and not start_date:
+        end_date += timedelta(hours=6)
         dtes = await crud_dte.get_multi(
             db=db,
             fh_procesamiento__lte=end_date,
@@ -121,6 +127,8 @@ async def get_dtes_statistics(
             return_as_model=True
         )
     elif start_date and end_date:
+        start_date += timedelta(hours=6)
+        end_date += timedelta(hours=6)
         dtes = await crud_dte.get_multi(
             db=db,
             fh_procesamiento__gte=start_date,
