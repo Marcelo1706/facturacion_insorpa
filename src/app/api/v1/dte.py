@@ -101,17 +101,30 @@ async def read_dte_by_numero_control(
     response_model=dict,
     dependencies=[Depends(get_current_user)])
 async def get_dtes_statistics(
-    request: Request,    
+    request: Request,
     db: Annotated[AsyncSession, Depends(async_get_db)],
-    fecha: str = None,) -> dict:
+    start_date: datetime = None,
+    end_date: datetime = None) -> dict:
 
-    if fecha: 
-        fecha_inicio = datetime.strptime(f"{fecha} 00:00:00", "%Y-%m-%d %H:%M:%S")
-        fecha_fin = datetime.strptime(f"{fecha} 23:59:59", "%Y-%m-%d %H:%M:%S")
+    if start_date and not end_date:
         dtes = await crud_dte.get_multi(
             db=db,
-            fh_procesamiento__gte=fecha_inicio,
-            fh_procesamiento__lte=fecha_fin,
+            fh_procesamiento__gte=start_date,
+            schema_to_select=DTERead,
+            return_as_model=True
+        )
+    elif end_date and not start_date:
+        dtes = await crud_dte.get_multi(
+            db=db,
+            fh_procesamiento__lte=end_date,
+            schema_to_select=DTERead,
+            return_as_model=True
+        )
+    elif start_date and end_date:
+        dtes = await crud_dte.get_multi(
+            db=db,
+            fh_procesamiento__gte=start_date,
+            fh_procesamiento__lte=end_date,
             schema_to_select=DTERead,
             return_as_model=True
         )
