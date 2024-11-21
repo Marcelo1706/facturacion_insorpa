@@ -83,8 +83,8 @@ async def recepcion_dte(
                             f"Fecha de Procesamiento: {datetime.now(pytz.timezone('America/El_Salvador'))}\n"
                             f"Estado: {response_data['estado']}\n"),
                 files=[
-                    enlaces["pdfUrl"],
-                    enlaces["jsonUrl"],
+                    {"type": "PDF", "link": enlaces["pdfUrl"]},
+                    {"type": "JSON", "link": enlaces["jsonUrl"]}
                 ]
             )
             return dte_data

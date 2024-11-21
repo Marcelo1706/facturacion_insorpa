@@ -31,18 +31,24 @@ def send_mail(
         msg["Date"] = formatdate(localtime=True)
         msg["Subject"] = subject
 
-        msg.attach(MIMEText(message))
-
         for path in files:
-            response = requests.get(path)
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(response.content)
-            encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition",
-                f"attachment; filename={Path(path).name}",
-            )
-            msg.attach(part)
+            response = requests.get(str(path["link"]), allow_redirects=True)
+            if response.status_code == 200:  # Verifica que se pueda acceder al archivo
+                part = MIMEBase("application", "octet-stream")
+                part.set_payload(response.content)
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f'attachment; filename={Path(path["link"]).name}',
+                )
+                msg.attach(part)
+                break
+            else:
+                logging.error(f"No se pudo descargar el archivo: {path}. Error: {response.text}")
+                # Insert the files as links in the email body
+                message += f'\n{path["type"]}: {path["link"]}.'
+
+        msg.attach(MIMEText(message))
 
         smtp = smtplib.SMTP(server, port)
         smtp.starttls()
