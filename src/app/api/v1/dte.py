@@ -116,7 +116,8 @@ async def get_dtes_statistics(
             db=db,
             fh_procesamiento__gte=start_date,
             schema_to_select=DTERead,
-            return_as_model=True
+            return_as_model=True,
+            limit=None
         )
     elif end_date and not start_date:
         end_date += timedelta(hours=6)
@@ -124,7 +125,8 @@ async def get_dtes_statistics(
             db=db,
             fh_procesamiento__lte=end_date,
             schema_to_select=DTERead,
-            return_as_model=True
+            return_as_model=True,
+            limit=None
         )
     elif start_date and end_date:
         start_date += timedelta(hours=6)
@@ -134,13 +136,19 @@ async def get_dtes_statistics(
             fh_procesamiento__gte=start_date,
             fh_procesamiento__lte=end_date,
             schema_to_select=DTERead,
-            return_as_model=True
+            return_as_model=True,
+            limit=None
         )
     else:
+        min_date = datetime(2024, 11, 1, 0, 0, 0)
+        max_date = datetime.now()
         dtes = await crud_dte.get_multi(
             db=db,
+            fh_procesamiento__gte=min_date,
+            fh_procesamiento__lte=max_date,
             schema_to_select=DTERead,
-            return_as_model=True
+            return_as_model=True,
+            limit=None
         )
 
     return {
