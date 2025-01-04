@@ -8,6 +8,7 @@ def generar_pdf(documento: str, sello_recibido: str, tipo_dte: str):
         response = requests.post(
             f"{settings.PDF_GENERATOR_URL}?documento={tipo_dte}",
             json={
+                "nit": settings.DTE_NIT,
                 "documento": documento,
                 "selloRecibido": sello_recibido
             }

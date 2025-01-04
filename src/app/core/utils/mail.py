@@ -42,7 +42,6 @@ def send_mail(
                     f'attachment; filename={Path(path["link"]).name}',
                 )
                 msg.attach(part)
-                break
             else:
                 logging.error(f"No se pudo descargar el archivo: {path}. Error: {response.text}")
                 # Insert the files as links in the email body
