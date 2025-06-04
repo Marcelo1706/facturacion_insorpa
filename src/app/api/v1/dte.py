@@ -12,6 +12,7 @@ from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_dte import crud_dte
 from ...crud.crud_evento import crud_evento
 from ...schemas.dte import DTERead
+from ...schemas.evento import EventoRead
 
 router = APIRouter(tags=["Consulta de DTEs"])
 
@@ -177,7 +178,7 @@ async def reconciliar_anulados(
     eventos = await crud_evento.get_multi(
         db=db,
         tipo_evento="ANULACION",
-        schema_to_select=None,
+        schema_to_select=EventoRead,
         return_as_model=True,
         limit=None
     )
