@@ -177,30 +177,27 @@ async def reconciliar_anulados(
     """
     eventos = await crud_evento.get_multi(
         db=db,
-        tipo_evento="ANULACION",
+        tipo_evento="INVALIDACION",
         schema_to_select=EventoRead,
         return_as_model=True,
         limit=None
     )
     reconciliados = 0
-    for evento in eventos:
+    anulados = 0
+    for evento in eventos["data"]:
         json_evento = json.loads(evento.evento)
         json_respuesta = json.loads(evento.respuesta_mh)
         if json_respuesta.get("estado") == "PROCESADO":
-            dte = await crud_dte.get(
+            anulados += 1
+            await crud_dte.update(
                 db=db,
-                cod_generacion=json_evento["identificacion"]["codGeneracion"],
-                schema_to_select=None
+                allow_multiple=True,
+                cod_generacion=json_evento["documento"]["codigoGeneracion"],
+                object={
+                    "estado": "ANULADO",
+                }
             )
-            if dte:
-                await crud_dte.update(
-                    db=db,
-                    object=dte,
-                    estado="ANULADO",
-                    fh_procesamiento=datetime.strptime(json_respuesta["fhProcesamiento"], "%d/%m/%Y %H:%M:%S")
-                )
-                reconciliados += 1
     return {
-        "message": f"Reconciliados {reconciliados} DTEs anulados.",
-        "reconciliados": reconciliados
+        "message": f"{anulados} DTEs anulados.",
+        "anulados": anulados
     }
