@@ -198,6 +198,7 @@ async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: A
                 db=db,
                 allow_multiple=True,
                 cod_generacion=documento_sin_firma["identificacion"]["codGeneracion"],
+                estado="PROCESADO",
                 object={
                     "estado": "ANULADO",
                 }

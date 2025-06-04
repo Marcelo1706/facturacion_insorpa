@@ -193,6 +193,7 @@ async def reconciliar_anulados(
                 db=db,
                 allow_multiple=True,
                 cod_generacion=json_evento["documento"]["codigoGeneracion"],
+                estado="PROCESADO",
                 object={
                     "estado": "ANULADO",
                 }
