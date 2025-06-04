@@ -1,3 +1,4 @@
+import json
 from datetime import datetime, timedelta
 from typing import Annotated, Any
 
@@ -9,7 +10,9 @@ from ...api.dependencies import get_current_user
 from ...core.db.database import async_get_db
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_dte import crud_dte
+from ...crud.crud_evento import crud_evento
 from ...schemas.dte import DTERead
+from ...schemas.evento import EventoRead
 
 router = APIRouter(tags=["Consulta de DTEs"])
 
@@ -157,4 +160,45 @@ async def get_dtes_statistics(
         "rejected": len([dte for dte in dtes["data"] if dte.estado == "RECHAZADO"]),
         "contingencia": len([dte for dte in dtes["data"] if dte.estado == "CONTINGENCIA"]),
         "anulado": len([dte for dte in dtes["data"] if dte.estado == "ANULADO"])
+    }
+
+
+@router.get(
+    "/reconciliar_anulados",
+    response_model=dict,
+    dependencies=[Depends(get_current_user)])
+async def reconciliar_anulados(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+) -> dict:
+    """
+    Endpoint to reconcile annulled DTEs.
+    This endpoint will check for annulled DTEs and update their status accordingly.
+    """
+    eventos = await crud_evento.get_multi(
+        db=db,
+        tipo_evento="INVALIDACION",
+        schema_to_select=EventoRead,
+        return_as_model=True,
+        limit=None
+    )
+    reconciliados = 0
+    anulados = 0
+    for evento in eventos["data"]:
+        json_evento = json.loads(evento.evento)
+        json_respuesta = json.loads(evento.respuesta_mh)
+        if json_respuesta.get("estado") == "PROCESADO":
+            anulados += 1
+            await crud_dte.update(
+                db=db,
+                allow_multiple=True,
+                cod_generacion=json_evento["documento"]["codigoGeneracion"],
+                estado="PROCESADO",
+                object={
+                    "estado": "ANULADO",
+                }
+            )
+    return {
+        "message": f"{anulados} DTEs anulados.",
+        "anulados": anulados
     }

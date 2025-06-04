@@ -191,6 +191,20 @@ async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: A
         response_data = response.json()
 
         response_data["fhProcesamiento"] = datetime.strptime(response_data["fhProcesamiento"], "%d/%m/%Y %H:%M:%S")
+
+        if response_data["estado"] == "PROCESADO":
+            # Update the DTE status to "ANULADO"
+            await crud_dte.update(
+                db=db,
+                allow_multiple=True,
+                cod_generacion=documento_sin_firma["identificacion"]["codGeneracion"],
+                estado="PROCESADO",
+                object={
+                    "estado": "ANULADO",
+                }
+            )
+
+
         return response_data
 
     except (requests.exceptions.HTTPError, requests.exceptions.RequestException, Exception) as e:
