@@ -1,5 +1,6 @@
 import logging
 import smtplib
+import ssl
 from email import encoders
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
@@ -49,11 +50,15 @@ def send_mail(
 
         msg.attach(MIMEText(message))
 
-        smtp = smtplib.SMTP(server, port)
-        smtp.starttls()
-        smtp.login(username, password)
-        smtp.sendmail(send_from, send_to, msg.as_string())
-        smtp.quit()
+        with smtplib.SMTP_SSL(server, port) as server:
+            server.ehlo()
+            if port == 587:
+                context = ssl.create_default_context()
+                server.starttls(context=context)
+                server.ehlo()
+            server.login(username, password)
+            server.sendmail(send_from, send_to, msg.as_string())
+
     except Exception as e:
         logging.error(f"Error sending email: {e}")
         return False
