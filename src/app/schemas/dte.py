@@ -17,6 +17,7 @@ class DTEBase(BaseModel):
     enlace_pdf: Annotated[str | None, Field(max_length=255)] = None
     enlace_json: Annotated[str | None, Field(max_length=255)] = None
     enlace_ticket: Annotated[str | None, Field(max_length=255)] = None
+    respuesta_mh: Annotated[dict | None, Field()] = None
 
 # Schema for reading DTE data
 class DTERead(DTEBase):

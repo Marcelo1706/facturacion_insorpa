@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...api.dependencies import get_current_user
 from ...core.db.database import async_get_db
+from ...core.utils.recepcion_dte import consulta_dte
 from ...core.exceptions.http_exceptions import NotFoundException
 from ...crud.crud_dte import crud_dte
 from ...crud.crud_evento import crud_evento
@@ -82,7 +83,11 @@ async def read_dte(request: Request, codGeneracion: str, db: Annotated[AsyncSess
     )
     if dte_data is None:
         raise NotFoundException("DTE not found")
+
+    dte_data["respuesta_mh"] = await consulta_dte(codGeneracion, dte_data["tipo_dte"]) or {"message": "Sin Respuesta"}
+
     return dte_data
+
 
 
 @router.get(

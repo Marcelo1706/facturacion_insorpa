@@ -211,3 +211,15 @@ async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: A
         return {"message": "Error al enviar el evento de invalidación: " + str(e)}
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
         return {"message": "Error de conexión con el servidor de Hacienda"}
+
+
+async def consulta_dte(codigo_generacion: str, tdte: str):
+    token = get_token()
+    headers = {"Authorization": f"{token}"}
+    data = {
+        "nitEmisor": settings.DTE_NIT,
+        "tdte": tdte,
+        "codigoGeneracion": codigo_generacion,
+    }
+    response = requests.post(settings.DTE_CONSULTAS_URL, json=data, headers=headers)
+    return response.json()
