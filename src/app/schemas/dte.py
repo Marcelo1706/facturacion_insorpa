@@ -20,7 +20,7 @@ class DTEBase(BaseModel):
 
 # Schema for reading DTE data
 class DTERead(DTEBase):
-    id: int
+    id: int | None = None
     respuesta_mh: Annotated[dict | None, Field()] = None
 
 # Schema for creating new DTE records

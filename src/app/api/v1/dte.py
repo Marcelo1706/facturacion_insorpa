@@ -82,7 +82,20 @@ async def read_dte(request: Request, codGeneracion: str, db: Annotated[AsyncSess
         cod_generacion=codGeneracion
     )
     if dte_data is None:
-        raise NotFoundException("DTE not found")
+        dte_data = {
+            "id": 0,
+            "cod_generacion": "",
+            "numero_control": "",
+            "sello_recibido": None,
+            "estado": "NO PROCESADO",
+            "documento": "",
+            "fh_procesamiento": datetime.now(),
+            "observaciones": "No registrado en Octopus",
+            "tipo_dte": "01",
+            "enlace_pdf": None,
+            "enlace_json": None,
+            "enlace_ticket": None
+        }
 
     dte_data["respuesta_mh"] = await consulta_dte(codGeneracion, dte_data["tipo_dte"]) or {"message": "Sin Respuesta"}
 
