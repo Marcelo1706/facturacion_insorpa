@@ -21,53 +21,41 @@ router = APIRouter(tags=["Consulta de DTEs"])
 @router.get(
     "/dtes",
     response_model=PaginatedListResponse[DTERead],
-    dependencies=[Depends(get_current_user)])
+    dependencies=[Depends(get_current_user)]
+)
 async def read_dtes(
     request: Request,
     db: Annotated[AsyncSession, Depends(async_get_db)],
+    cod_generacion: str = None,
     page: int = 1,
     items_per_page: int = 10,
     start_date: datetime = None,
     end_date: datetime = None
 ) -> dict:
-    if start_date and not end_date:
-        start_date += timedelta(hours=6)
-        dte_data = await crud_dte.get_multi(
-            db=db,
-            offset=compute_offset(page, items_per_page),
-            limit=items_per_page,
-            fh_procesamiento__gte=start_date,
-            schema_to_select=DTERead
-        )
-    elif end_date and not start_date:
-        end_date += timedelta(hours=6)
-        dte_data = await crud_dte.get_multi(
-            db=db,
-            offset=compute_offset(page, items_per_page),
-            limit=items_per_page,
-            fh_procesamiento__lte=end_date,
-            schema_to_select=DTERead
-        )
-    elif start_date and end_date:
-        start_date += timedelta(hours=6)
-        end_date += timedelta(hours=6)
-        dte_data = await crud_dte.get_multi(
-            db=db,
-            offset=compute_offset(page, items_per_page),
-            limit=items_per_page,
-            fh_procesamiento__gte=start_date,
-            fh_procesamiento__lte=end_date,
-            schema_to_select=DTERead
-        )
-    else:
-        dte_data = await crud_dte.get_multi(
-            db=db,
-            offset=compute_offset(page, items_per_page),
-            limit=items_per_page,
-            schema_to_select=DTERead
-        )
+    filters = {
+        "offset": compute_offset(page, items_per_page),
+        "limit": items_per_page,
+        "schema_to_select": DTERead,
+    }
 
-    response: dict[str, Any] = paginated_response(crud_data=dte_data, page=page, items_per_page=items_per_page)
+    if cod_generacion:
+        filters["cod_generacion"] = cod_generacion
+
+    if start_date and not end_date:
+        filters["fh_procesamiento__gte"] = start_date + timedelta(hours=6)
+    elif end_date and not start_date:
+        filters["fh_procesamiento__lte"] = end_date + timedelta(hours=6)
+    elif start_date and end_date:
+        filters["fh_procesamiento__gte"] = start_date + timedelta(hours=6)
+        filters["fh_procesamiento__lte"] = end_date + timedelta(hours=6)
+
+    dte_data = await crud_dte.get_multi(db=db, **filters)
+
+    response: dict[str, Any] = paginated_response(
+        crud_data=dte_data,
+        page=page,
+        items_per_page=items_per_page
+    )
     return response
 
 
