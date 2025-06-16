@@ -40,13 +40,9 @@ async def read_dtes(
 
     if cod_generacion:
         filters["cod_generacion"] = cod_generacion
-
-    if start_date and not end_date:
+    if start_date:
         filters["fh_procesamiento__gte"] = start_date + timedelta(hours=6)
-    elif end_date and not start_date:
-        filters["fh_procesamiento__lte"] = end_date + timedelta(hours=6)
-    elif start_date and end_date:
-        filters["fh_procesamiento__gte"] = start_date + timedelta(hours=6)
+    if end_date:
         filters["fh_procesamiento__lte"] = end_date + timedelta(hours=6)
 
     dte_data = await crud_dte.get_multi(db=db, **filters)
