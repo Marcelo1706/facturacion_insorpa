@@ -32,10 +32,24 @@ async def send_dte(
     if not correlativo:
         raise BadRequestException("Error al obtener correlativo")
 
+    apendices = dte["apendice"]
+
+    if not apendices:
+        raise BadRequestException("Debe proporcionar apendice para continuar")
+
+    codSucursal = "S001"
+    codPuntoVenta = "P001"
+
+    for apendice in apendices:
+        if apendice.get("campo") == "Tienda":
+            codSucursal = apendice.get("valor")
+        if apendice.get("campo") == "Terminal":
+            codPuntoVenta = apendice.get("valor")
+
     dte["identificacion"]["numeroControl"] = generar_numero_control(
         correlativo=correlativo["secuencia"],
-        sucursal=dte["emisor"].get("codEstable", "0001"),
-        punto_venta=dte["emisor"].get("codPuntoVenta", "01"),
+        sucursal=codSucursal,
+        punto_venta=codPuntoVenta,
         tipo_dte=dte["identificacion"]["tipoDte"]
     )
 

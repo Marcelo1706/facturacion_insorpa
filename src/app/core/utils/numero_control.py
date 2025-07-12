@@ -7,11 +7,9 @@ from ...schemas.secuencia import SecuenciaRead, SecuenciaUpdate
 def generar_numero_control(
     correlativo: int,
     tipo_dte: str,
-    sucursal: str = "001",
-    punto_venta: str = "001") -> str:
-    sucursal = str(int(sucursal)).zfill(3)
-    punto_venta = str(int(punto_venta)).zfill(3)
-    return f"DTE-{tipo_dte}-T{sucursal}P{punto_venta}-{str(correlativo).zfill(15)}"
+    sucursal: str = "S001",
+    punto_venta: str = "P001") -> str:
+    return f"DTE-{tipo_dte}-{sucursal}{punto_venta}-{str(correlativo).zfill(15)}"
 
 
 async def update_numero_control(
