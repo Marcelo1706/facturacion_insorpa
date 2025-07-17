@@ -197,7 +197,7 @@ async def anulacion_dte(documento_firmado: str, documento_sin_firma: dict, db: A
             await crud_dte.update(
                 db=db,
                 allow_multiple=True,
-                cod_generacion=documento_sin_firma["identificacion"]["codGeneracion"],
+                cod_generacion=documento_sin_firma["documento"]["codigoGeneracion"],
                 estado="PROCESADO",
                 object={
                     "estado": "ANULADO",
