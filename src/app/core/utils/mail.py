@@ -50,14 +50,20 @@ def send_mail(
 
         msg.attach(MIMEText(message))
 
-        with smtplib.SMTP_SSL(server, port) as server:
-            server.ehlo()
-            if port == 587:
-                context = ssl.create_default_context()
-                server.starttls(context=context)
-                server.ehlo()
-            server.login(username, password)
-            server.sendmail(send_from, send_to, msg.as_string())
+        if port == 465:
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(server, port, context=context) as smtp:
+                smtp.login(username, password)
+                smtp.sendmail(send_from, send_to, msg.as_string())
+        else:
+            with smtplib.SMTP(server, port) as smtp:
+                smtp.ehlo()
+                if use_tls:  # Aquí debe ser True para el puerto 2525
+                    context = ssl.create_default_context()
+                    smtp.starttls(context=context)
+                    smtp.ehlo()
+                smtp.login(username, password)
+                smtp.sendmail(send_from, send_to, msg.as_string())
 
     except Exception as e:
         logging.error(f"Error sending email: {e}")
