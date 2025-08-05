@@ -132,6 +132,7 @@ class MailSettings(BaseSettings):
     SMTP_USER: str | None = config("SMTP_USER", default=None)
     SMTP_PASSWORD: str | None = config("SMTP_PASSWORD", default=None)
     SMTP_FROM: str = config("SMTP_FROM", default="someone@example.com")
+    DISABLE_EMAIL: bool = config("DISABLE_EMAIL", default=False, cast=bool)
 
 
 class Settings(

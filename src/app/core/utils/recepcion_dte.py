@@ -72,21 +72,22 @@ async def recepcion_dte(
                 receptor_mail = documento_sin_firma.get("receptor", {}).get("correo", None)
                 nombre_receptor = documento_sin_firma.get("receptor", {}).get("nombre", "Cliente")
 
-            send_mail(
-                send_to=[receptor_mail or "facturas@facturacion-insorpa.com"],
-                subject="Documento Tributario Electrónico",
-                message=(f"Estimado(a) {nombre_receptor},\n\n"
-                            "Adjunto encontrará su documento tributario electrónico:\n\n"
-                            f"Código de Generación: {codGeneracion}\n"
-                            f"Número de Control: {documento_sin_firma['identificacion']['numeroControl']}\n"
-                            f"Sello de Recepción: {response_data['selloRecibido']}\n"
-                            f"Fecha de Procesamiento: {datetime.now(pytz.timezone('America/El_Salvador'))}\n"
-                            f"Estado: {response_data['estado']}\n"),
-                files=[
-                    {"type": "PDF", "link": enlaces["pdfUrl"]},
-                    {"type": "JSON", "link": enlaces["jsonUrl"]}
-                ]
-            )
+            if not settings.DISABLE_EMAIL:
+                send_mail(
+                    send_to=[receptor_mail or "facturas@facturacion-insorpa.com"],
+                    subject="Documento Tributario Electrónico",
+                    message=(f"Estimado(a) {nombre_receptor},\n\n"
+                                "Adjunto encontrará su documento tributario electrónico:\n\n"
+                                f"Código de Generación: {codGeneracion}\n"
+                                f"Número de Control: {documento_sin_firma['identificacion']['numeroControl']}\n"
+                                f"Sello de Recepción: {response_data['selloRecibido']}\n"
+                                f"Fecha de Procesamiento: {datetime.now(pytz.timezone('America/El_Salvador'))}\n"
+                                f"Estado: {response_data['estado']}\n"),
+                    files=[
+                        {"type": "PDF", "link": enlaces["pdfUrl"]},
+                        {"type": "JSON", "link": enlaces["jsonUrl"]}
+                    ]
+                )
             return dte_data
         else:
             dte_data: DTERead = await crud_dte.create(

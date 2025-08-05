@@ -1,6 +1,7 @@
+from decimal import Decimal
 import json
 from datetime import datetime, timedelta
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Depends, Request
 from fastcrud.paginated import PaginatedListResponse, compute_offset, paginated_response
@@ -204,3 +205,108 @@ async def reconciliar_anulados(
         "message": f"{anulados} DTEs anulados.",
         "anulados": anulados
     }
+
+
+@router.get(
+    "/dtes-table",
+    response_model=PaginatedListResponse[dict],
+    dependencies=[Depends(get_current_user)])
+async def read_dtes_table(
+    request: Request,
+    db: Annotated[AsyncSession, Depends(async_get_db)],
+    cod_generacion: str = None,
+    numero_control: str = None,
+    page: int = 1,
+    items_per_page: int = 10,
+    start_date: datetime = None,
+    end_date: datetime = None,
+    status: str = None,
+    tienda: str = None,
+    transaccion: str = None,
+    limit: int | None = 10
+) -> dict:
+    pass
+
+def format_currency(value: float | Decimal | None) -> str:
+    if value is None:
+        return "$0.00"
+    return f"${float(value):.2f}"
+
+
+def process_dte(dte: DTERead) -> dict:
+    doc = json.loads(dte.documento) or {}
+    resumen = doc.get("resumen", {})
+    tipo_dte = dte.tipo_dte
+    prepared = {
+        "fh_procesamiento": dte.fh_procesamiento,
+        "tipo_dte": tipo_dte,
+        "enlace_pdf": dte.enlace_pdf,
+        "enlace_json": dte.enlace_json,
+        "enlace_ticket": dte.enlace_ticket,
+        "cod_generacion": dte.cod_generacion,
+        "numero_control": dte.numero_control,
+        "sello_recibido": dte.sello_recibido,
+        "estado": dte.estado,
+        "observaciones": dte.observaciones,
+        "tienda": "",
+        "transaccion": "",
+        "receptor": "",
+        "neto": "$0.00",
+        "iva": "$0.00",
+        "total": "$0.00"
+    }
+
+    apendice = doc.get("apendice", [])
+    if apendice:
+        for item in apendice:
+            if item.get("campo") == "Tienda":
+                prepared["tienda"] = item.get("valor", "")
+            elif item.get("campo") == "Transaccion":
+                prepared["transaccion"] = item.get("valor", "")
+
+    receptor = None
+    if tipo_dte == "14":
+        receptor = doc.get("sujetoExcluido")
+    else:
+        receptor = doc.get("receptor")
+
+    if receptor:
+        nombre = receptor.get("nombre", "")
+        documento = receptor.get("nit") or receptor.get("numDocumento") or ""
+        prepared["receptor"] = f"{nombre}<br>{documento}"
+
+    # Cálculos por tipo de DTE
+    match tipo_dte:
+        case "01":
+            total = resumen.get("totalPagar")
+            prepared["neto"] = format_currency(total)
+            prepared["iva"] = "$0.00"
+            prepared["total"] = format_currency(total)
+        case "03":
+            subtotal = resumen.get("subTotalVentas")
+            iva = subtotal * 0.13 if subtotal else 0
+            prepared["neto"] = format_currency(subtotal)
+            prepared["iva"] = format_currency(iva)
+            prepared["total"] = format_currency(resumen.get("totalPagar"))
+        case "04" | "05":
+            subtotal = resumen.get("subTotalVentas")
+            iva = subtotal * 0.13 if subtotal else 0
+            prepared["neto"] = format_currency(subtotal)
+            prepared["iva"] = format_currency(iva)
+            prepared["total"] = format_currency(resumen.get("montoTotalOperacion"))
+        case "07":
+            prepared["neto"] = format_currency(resumen.get("totalSujetoRetencion"))
+            prepared["iva"] = format_currency(resumen.get("totalIVAretenido"))
+            prepared["total"] = format_currency(resumen.get("totalSujetoRetencion"))
+        case "11":
+            total = resumen.get("totalPagar")
+            prepared["neto"] = format_currency(total)
+            prepared["iva"] = "$0.00"
+            prepared["total"] = format_currency(total)
+        case "14":
+            total = resumen.get("totalCompra")
+            prepared["neto"] = format_currency(total)
+            prepared["iva"] = "$0.00"
+            prepared["total"] = format_currency(total)
+
+    return prepared

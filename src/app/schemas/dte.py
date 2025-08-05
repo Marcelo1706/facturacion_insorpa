@@ -55,3 +55,23 @@ class DTEDelete(BaseModel):
 
 class DTERestoreDelete(BaseModel):
     is_deleted: bool
+
+class DTEProcessed(BaseModel):
+    fh_procesamiento: datetime
+    tipo_dte: str
+    enlace_pdf: str | None
+    enlace_json: str | None
+    enlace_ticket: str | None
+    cod_generacion: str
+    numero_control: str
+    sello_recibido: str | None
+    estado: str
+    observaciones: str | None
+
+    # Campos nuevos
+    receptor: str | None
+    tienda: str | None
+    transaccion: str | None
+    neto: str | None
+    iva: str | None
+    total: str | None
