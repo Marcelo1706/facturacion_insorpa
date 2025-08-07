@@ -19,6 +19,10 @@ RETURNS TABLE (
     sello_recibido VARCHAR(255),
     numero_control VARCHAR(255),
     fh_procesamiento TIMESTAMP WITH TIME ZONE,
+    observaciones TEXT,
+    enlace_pdf VARCHAR(255),
+    enlace_json VARCHAR(255),
+    enlace_ticket VARCHAR(255),
     estado VARCHAR(255),
     tienda TEXT,
     transaccion TEXT,
@@ -36,6 +40,10 @@ BEGIN
         dg.sello_recibido,
         dg.numero_control,
         dg.fh_procesamiento,
+        dg.observaciones,
+        dg.enlace_pdf,
+        dg.enlace_json,
+        dg.enlace_ticket,
         dg.estado,
 
         -- Apendice tienda y transacción
